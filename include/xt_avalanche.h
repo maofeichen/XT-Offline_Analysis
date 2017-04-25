@@ -6,6 +6,7 @@
 #include "xt_propagate.h"
 #include "xt_rangearray.h"
 #include "xt_taintpropagate.h"
+#include "xt_type.h"
 
 #include <vector>
 #include <unordered_set>

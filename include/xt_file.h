@@ -9,9 +9,9 @@
 namespace xt_file {
   const std::string ext       = ".txt";
   const std::string log_path  =
-      "/home/xtaint/Workplace/XRayTaint-OfflineAnalysis/test_file/";
+      "/home/xtaint/Workplace/XT-Offline_Analysis/test_file/";
   const std::string res_path  =
-      "/home/xtaint/Workplace/XRayTaint-OfflineAnalysis/test_result/";
+      "/home/xtaint/Workplace/XT-Offline_Analysis/test_result/";
 
   const std::string preprocess    = "-preprcss";
   const std::string add_mem_sz    = "-add_mem_sz";

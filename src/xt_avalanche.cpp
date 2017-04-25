@@ -1,6 +1,7 @@
 #include "xt_avalanche.h"
 #include "xt_blockdetector.h"
 #include "xt_flag.h"
+#include "xt_hashdetector.h"
 #include "xt_propagate.h"
 #include "xt_node.h"
 
@@ -35,10 +36,7 @@ Avalanche::detect(const std::vector<AliveFunction>& v_liveness)
         auto it_out = it_func_out->get_cont_buf().begin();
         for(; it_out != it_func_out->get_cont_buf().end(); ++it_out) {
 
-          if(it_in->get_begin() == 0x804c860
-             && it_in->get_byte_sz() == 96
-             && it_out->get_begin() == 0x804d040
-             && it_out->get_byte_sz() == 96) {
+          if(it_in->get_begin() != it_out->get_begin() ){
             detect_in_out(*it_in, *it_out);
           }
         }
@@ -77,6 +75,13 @@ Avalanche::detect_in_out(const ContinueBuf& in,
 
   vector<TaintPropagate *> in_prpgt_ra_res;
   gen_in_taint_ra(in, in_prpgt_res, in_prpgt_ra_res);
+
+  // detects hash first
+  RangeArray      hash_in;
+  VSPtrRangeArray hash_in_progt;
+  HashDetector    hash_detector(in.get_begin(), in.get_byte_sz(),
+                                out.get_begin(), out.get_byte_sz() );
+  hash_detector.detect_hash(hash_in, hash_in_progt, in_prpgt_ra_res);
 
   RangeArray      in_blocks;
   VSPtrRangeArray in_blocks_prpgt;

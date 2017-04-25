@@ -12,7 +12,9 @@ public:
   RangeArray(const Range& r);
   ~RangeArray();
 
+  Range* operator[](uint32_t i);
   const Range* operator[](uint32_t i) const;
+  Range* at(uint32_t i);
   const Range* at(uint32_t i) const;
   RangeArray& operator=(const RangeArray& rhs);
 
@@ -20,6 +22,9 @@ public:
   void add_range(uint32_t begin, uint32_t len);
   void add_range(uint32_t begin, uint32_t len,
                  const std::multimap<uint32_t,uint32_t>& byte_val_map);
+
+  RangeArray& get_common_range(RangeArray& rhs);
+  void        get_common_range(RangeArray& ra_right, RangeArray& common);
 
   uint32_t get_size() const { return array_use_; }
 
@@ -43,6 +48,11 @@ private:
                     uint32_t begin,
                     uint32_t len,
                     const std::multimap<uint32_t,uint32_t>& byte_val_map);
+
+  void get_byte_val_map(const Range& r,
+                        uint32_t r_begin,
+                        uint32_t r_len,
+                        std::multimap<uint32_t,uint32_t>& map_res);
 };
 
 #endif /* XT_RANGEARRAY_H_ */

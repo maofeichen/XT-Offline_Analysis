@@ -263,8 +263,8 @@ void Propagate::handle_destinate_node_mem(const Node &node,
       }
 
       // inserts to propagate result
-//      cout << "propagate to: " << hex << i_byte_addr
-//           << " val: " << byte_val << endl;
+      cout << "propagate to: " << hex << i_byte_addr
+           << " val: " << byte_val << endl;
       Node res;
       to_one_byte_node(node.get_flag(), i_byte_addr, byte_val, res);
       add_prpgt_res(res, prpgt_res);

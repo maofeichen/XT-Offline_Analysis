@@ -3,6 +3,8 @@
 
 #include "xt_blockmodedetector.h"
 #include "xt_taintpropagate.h"
+#include "xt_type.h"
+
 #include <vector>
 
 class BlockDetector{
@@ -13,7 +15,7 @@ public:
   void detect_block(RangeArray      &in_blocks,
                     VSPtrRangeArray &in_blocks_prpgt,
                     const std::vector<TaintPropagate *>& in_prpgt_ra_res);
-private:
+protected:
   uint32_t in_begin_;
   uint32_t in_len_;
   uint32_t out_begin_;
