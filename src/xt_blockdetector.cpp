@@ -142,7 +142,24 @@ BlockDetector::extend_block(RangeArray &common,
                             uint32_t idx_byte,
                             const vector<TaintPropagate *>& in_prpgt_ra_res)
 {
+  uint32_t buf_sz = in_prpgt_ra_res.size();
+  if(idx_byte > buf_sz - 1) {
+    throw runtime_error("init block: given invalid index");
+  }
 
+  TaintPropagate* byte = in_prpgt_ra_res[idx_byte];
+
+  if(byte->get_taint_propagate()->get_size() == 0) {
+    cout << "init block: given byte propagation is empty." << endl;
+    return false;
+  }else {
+    common.get_common_range(*byte->get_taint_propagate() );
+    if(common.get_size() == 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }
 
 bool
@@ -161,4 +178,13 @@ BlockDetector::is_block_end(RangeArray &common,
                             uint32_t   accumu_b_sz)
 {
 
+}
+
+uint32_t
+BlockDetector::compt_in_res_begin(uint32_t idx_begin)
+{
+  if(idx_begin > in_len_) {
+    throw runtime_error("compute in res begin: given index is invalid.");
+  }
+  return in_begin_ + idx_begin;
 }

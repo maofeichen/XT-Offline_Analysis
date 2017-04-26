@@ -16,6 +16,9 @@ public:
   bool detect_hash(RangeArray      &in_blocks,
                    VSPtrRangeArray &in_blocks_prpgt,
                    const std::vector<TaintPropagate *>& in_prpgt_ra_res);
+private:
+  bool has_same_prgpt(const RangeArray& old_common, const RangeArray& common);
+  bool is_hash_sz(const RangeArray& common);
 };
 
 #endif /* XT_HASHDETECTOR_H_ */

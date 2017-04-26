@@ -76,12 +76,23 @@ Avalanche::detect_in_out(const ContinueBuf& in,
   vector<TaintPropagate *> in_prpgt_ra_res;
   gen_in_taint_ra(in, in_prpgt_res, in_prpgt_ra_res);
 
+  bool is_detect  = false;
+
   // detects hash first
   RangeArray      hash_in;
   VSPtrRangeArray hash_in_progt;
   HashDetector    hash_detector(in.get_begin(), in.get_byte_sz(),
                                 out.get_begin(), out.get_byte_sz() );
-  hash_detector.detect_hash(hash_in, hash_in_progt, in_prpgt_ra_res);
+  is_detect = hash_detector.detect_hash(hash_in, hash_in_progt, in_prpgt_ra_res);
+  if(is_detect) {
+    cout << "hash detected: " << endl;
+    cout << "input: " << hex << hash_detector.res_in.get_begin()
+         << " len: "  << dec << hash_detector.res_in.get_len() << " -> ";
+    cout << "output: " << hex << hash_detector.res_out.get_begin()
+         << " len: "   << dec << hash_detector.res_out.get_len() << endl;
+
+    return;
+  }
 
   RangeArray      in_blocks;
   VSPtrRangeArray in_blocks_prpgt;

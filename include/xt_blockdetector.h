@@ -9,6 +9,9 @@
 
 class BlockDetector{
 public:
+  Range res_in;
+  Range res_out;
+
   BlockDetector(uint32_t in_begin, uint32_t in_len,
                 uint32_t out_begin, uint32_t out_len);
 
@@ -48,6 +51,8 @@ protected:
   bool is_block_end(RangeArray &common,
                     RangeArray &old_common,
                     uint32_t   accumu_b_sz);
+
+  uint32_t compt_in_res_begin(uint32_t idx_begin);
 };
 
 

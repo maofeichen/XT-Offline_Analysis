@@ -135,8 +135,8 @@ RangeArray::get_common_range(RangeArray& ra_right, RangeArray& common)
   int idx_left = 0;
   int idx_right = 0;
 
-  Range*     r_left;
-  Range*     r_right;
+  const Range*     r_left;
+  const Range*     r_right;
   RangeArray &ra_left = *this;
 
   common.reset();
@@ -363,9 +363,9 @@ RangeArray::get_byte_val_map(const Range& r,
       }
     }
 
-    for(auto it = map_res.begin(); it != map_res.end(); ++it) {
-      cout << "addr: " << hex << it->first
-           << " val "  << hex << it->second << endl;
-    }
+//    for(auto it = map_res.begin(); it != map_res.end(); ++it) {
+//      cout << "addr: " << hex << it->first
+//           << " val "  << hex << it->second << endl;
+//    }
   } // end else
 }
