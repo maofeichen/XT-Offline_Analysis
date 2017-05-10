@@ -22,7 +22,8 @@ void Detector::detect() {
 
   vector<string> s_log;
   xt_file::File file(fn_);
-  file.read(s_log);
+//  file.read(s_log);
+  file.read_preprocess(s_log);
   cout << "init log entries: " << s_log.size() << endl;
 
   s_log = preprcss::preprocess(s_log);
@@ -58,9 +59,9 @@ void Detector::detect() {
     // propagate alive buffer?
   }
 
-  Propagate prpgt(log);
-  Avalanche aval(log, prpgt);
-  aval.detect(v_liveness);
+//  Propagate prpgt(log);
+//  Avalanche aval(log, prpgt);
+//  aval.detect(v_liveness);
 }
 
 string Detector::get_time() {

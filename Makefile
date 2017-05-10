@@ -20,7 +20,8 @@ DET_OBJ = $(DIR_OBJ)main.o \
 		  $(DIR_OBJ)TaintBitMap.o \
 		  $(DIR_OBJ)xt_range.o $(DIR_OBJ)xt_rangearray.o \
 		  $(DIR_OBJ)xt_taintpropagate.o \
-		  $(DIR_OBJ)xt_blockdetector.o $(DIR_OBJ)xt_hashdetector.o
+		  $(DIR_OBJ)xt_blockdetector.o $(DIR_OBJ)xt_hashdetector.o \
+		  $(DIR_OBJ)xt_streamcipherdetector.o $(DIR_OBJ)xt_ctrdetector.o
 
 all: $(DIR_BIN)detector
 

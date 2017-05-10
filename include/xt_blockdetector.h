@@ -1,7 +1,6 @@
 #ifndef XT_BLOCKDETECTOR_H_
 #define XT_BLOCKDETECTOR_H_
 
-#include "xt_blockmodedetector.h"
 #include "xt_taintpropagate.h"
 #include "xt_type.h"
 

@@ -50,6 +50,18 @@ Range::set_byte_val_map(const std::multimap<uint32_t,uint32_t> &byte_val_map)
   }
 }
 
+bool
+Range::has_range(uint32_t r_begin, uint32_t r_len)
+{
+  if(begin_ <= r_begin
+     && end_ >= (r_begin+r_len) ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
 void
 Range::print_range() const
 {

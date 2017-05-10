@@ -1,5 +1,6 @@
 #include "xt_avalanche.h"
 #include "xt_blockdetector.h"
+#include "xt_ctrdetector.h"
 #include "xt_flag.h"
 #include "xt_hashdetector.h"
 #include "xt_propagate.h"
@@ -23,8 +24,8 @@ Avalanche::detect(const std::vector<AliveFunction>& v_liveness)
   // uses each buffer in each function call as input buffer,
   // its next function calls' buffers as output buffer,
   // search avalanches
-  auto it_func_in = v_liveness.end()-2;
-//  auto it_func_in = v_liveness.begin();
+//  auto it_func_in = v_liveness.end()-2;
+  auto it_func_in = v_liveness.begin();
   for(; it_func_in != v_liveness.end()-1; ++it_func_in) {
 
     auto it_func_out = it_func_in+1;
@@ -37,7 +38,20 @@ Avalanche::detect(const std::vector<AliveFunction>& v_liveness)
         for(; it_out != it_func_out->get_cont_buf().end(); ++it_out) {
 
           if(it_in->get_begin() != it_out->get_begin() ){
-            detect_in_out(*it_in, *it_out);
+            // DEBUG
+            if(it_in->get_begin() == 0x804b0a0
+               && it_in->get_byte_sz() == 92
+               && it_out->get_begin() == 0x804b880
+               && it_out->get_byte_sz() == 96) {
+//              print_buf("input: ", *it_in);
+//              print_buf("output: ", *it_out);
+              detect_in_out(*it_in, *it_out);
+              return;
+            }
+            print_buf("input: ", *it_in);
+            print_buf("output: ", *it_out);
+
+//            detect_in_out(*it_in, *it_out);
           }
         }
       }
@@ -59,15 +73,6 @@ Avalanche::detect_in_out(const ContinueBuf& in,
   vector<vector<Prpgt_Byte_> > in_prpgt_res;
   gen_in_byte_prpgt(in, in_prpgt_res);
 
-//  for(uint32_t idx_byte = 0; idx_byte < in_prpgt_res.size(); idx_byte++) {
-//    cout << "idx byte: " << idx_byte << endl;
-//    for(auto it_prpgt = in_prpgt_res[idx_byte].begin();
-//        it_prpgt != in_prpgt_res[idx_byte].end(); ++it_prpgt) {
-//      cout << "propagate to: addr: " << hex << it_prpgt->addr
-//           << " val: " << it_prpgt->val << endl;
-//    }
-//  }
-
   cout << "num gen taint sources: " << dec << in_prpgt_res.size() << endl;
   if(in_prpgt_res.size() != in.get_byte_sz() ) {
     throw runtime_error("err: num gen taint sources does not match.");
@@ -75,10 +80,31 @@ Avalanche::detect_in_out(const ContinueBuf& in,
 
   vector<TaintPropagate *> in_prpgt_ra_res;
   gen_in_taint_ra(in, in_prpgt_res, in_prpgt_ra_res);
+  if(in_prpgt_res.size() != in_prpgt_ra_res.size() ) {
+    cout << "num taint propagations and num taint sources are not matched." << endl;
+    return;
+  }
+
+  return;
 
   bool is_detect  = false;
 
-  // detects hash first
+  // detects stream cipher
+  CTRDetector ctr(in.get_begin(), in.get_byte_sz(),
+                  out.get_begin(), out.get_byte_sz() );
+  is_detect = ctr.detect_ctr(in_prpgt_ra_res);
+  if(is_detect) {
+    cout << "stream cipher detected: " << endl;
+    cout << "input: " << hex << ctr.res_in.get_begin()
+         << " len: "  << dec << ctr.res_in.get_len()
+         << " has byte to byte propagation to ";
+    cout << "output: " << hex << ctr.res_out.get_begin()
+         << " len: "   << dec << ctr.res_out.get_len() << endl;
+
+    return;
+  }
+
+  // detects hash
   RangeArray      hash_in;
   VSPtrRangeArray hash_in_progt;
   HashDetector    hash_detector(in.get_begin(), in.get_byte_sz(),
@@ -98,7 +124,7 @@ Avalanche::detect_in_out(const ContinueBuf& in,
   VSPtrRangeArray in_blocks_prpgt;
   BlockDetector   block_detector(in.get_begin(), in.get_byte_sz(),
                                  out.get_begin(), out.get_byte_sz() );
-  block_detector.detect_block(in_blocks, in_blocks_prpgt, in_prpgt_ra_res);
+//  block_detector.detect_block(in_blocks, in_blocks_prpgt, in_prpgt_ra_res);
 }
 
 void
@@ -116,15 +142,15 @@ Avalanche::gen_in_byte_prpgt(const ContinueBuf& in,
   cout << "begin addr: " << hex << in.get_begin() << endl;
 
   for(uint32_t idx_byte = 0; idx_byte < in_taint_src.size(); idx_byte++) {
-//    cout << "byte idx: " << idx_byte
-//         << " num node: " << in_taint_src[idx_byte].v_taint_src.size()  << endl;
+    cout << "byte idx: " << dec << idx_byte
+         << " num node: " << in_taint_src[idx_byte].v_taint_src.size()  << endl;
     unordered_set<Node, NodeHash> set_prpgt_res;
 
     for(auto it = in_taint_src[idx_byte].v_taint_src.begin();
         it != in_taint_src[idx_byte].v_taint_src.end(); ++it) {
       uint32_t node_idx = it->node_idx;
       uint8_t  pos      = it->pos;
-//      cout << "node idx: " << node_idx << endl;
+      cout << dec << "node idx: " << node_idx << endl;
 
       // searches propagate of node index
       Node node = get_mem_node(node_idx);
@@ -142,6 +168,16 @@ Avalanche::gen_in_byte_prpgt(const ContinueBuf& in,
 
     in_prpgt_res.push_back(v_prpgt_byte);
   }
+
+//  for(uint32_t idx_byte = 0; idx_byte < in_prpgt_res.size(); idx_byte++) {
+//    cout << "idx byte: " << idx_byte << endl;
+//    for(auto it_prpgt = in_prpgt_res[idx_byte].begin();
+//        it_prpgt != in_prpgt_res[idx_byte].end(); ++it_prpgt) {
+//      cout << "propagate to: addr: " << hex << it_prpgt->addr
+//           << " val: " << it_prpgt->val << endl;
+//    }
+//  }
+
 }
 
 void
@@ -210,22 +246,26 @@ Avalanche::gen_in_taint_ra(const ContinueBuf& in,
 
   uint32_t begin_addr   = in.get_begin();
   for(auto it = in_prpgt_res.begin(); it != in_prpgt_res.end(); ++it) {
+    cout << "taint src: " << hex << begin_addr << endl;
     TaintPropagate* taint_prpgt = new TaintPropagate(begin_addr);
 
     gen_in_taint_ra_per_byte(*it, taint_prpgt->get_taint_propagate() );
+//    taint_prpgt->get_taint_propagate()->print_range_array();
 
-    in_prpgt_ra_res.push_back(taint_prpgt);
+    if(taint_prpgt->get_taint_propagate()->get_size() != 0) {
+      in_prpgt_ra_res.push_back(taint_prpgt);
+    }
     begin_addr++;
   }
 
-//  for(uint32_t i = 0; i < in_prpgt_ra_res.size(); i++) {
-//    cout << "taint src: " << hex << in_prpgt_ra_res[i]->get_src_addr()
-//         << " can propagate to: " << endl;
-//    for(uint32_t j = 0; j < in_prpgt_ra_res[i]->get_taint_propagate()->get_size(); j++) {
-//      in_prpgt_ra_res[i]->get_taint_propagate()->at(j)->print_range();
+  for(uint32_t i = 0; i < in_prpgt_ra_res.size(); i++) {
+    cout << "taint src: " << hex << in_prpgt_ra_res[i]->get_src_addr()
+         << " can propagate to: " << endl;
+    for(uint32_t j = 0; j < in_prpgt_ra_res[i]->get_taint_propagate()->get_size(); j++) {
+      in_prpgt_ra_res[i]->get_taint_propagate()->at(j)->print_range();
 //      in_prpgt_ra_res[i]->get_taint_propagate()->at(j)->print_byte_val_map();
-//    }
-//  }
+    }
+  }
 
 }
 
@@ -234,7 +274,9 @@ Avalanche::gen_in_taint_ra_per_byte(const vector<Prpgt_Byte_>& byte_prpgt_res,
                                     RangeArray *byte_taint_prpgt)
 {
   if(byte_prpgt_res.empty() ) {
-    throw runtime_error("err: gen range arrays per byte, given byte propagation is empty.");
+//    throw runtime_error("err: gen range arrays per byte, given byte propagation is empty.");
+    cout << "err: gen range arrays per byte, given byte propagation is empty." << endl;
+    return;
   }
 
   auto it_prpgt_byte  = byte_prpgt_res.begin();
@@ -265,6 +307,10 @@ Avalanche::gen_in_taint_ra_per_byte(const vector<Prpgt_Byte_>& byte_prpgt_res,
       byte_val_map.clear();
       byte_val_map.insert(pair<uint32_t,uint32_t>(ra_begin, ra_val) );
     }
+  }
+
+  if(ra_len > 0) {
+    byte_taint_prpgt->add_range(ra_begin, ra_len, byte_val_map);
   }
 }
 
@@ -334,3 +380,11 @@ Avalanche::compute_byte_pos(const uint32_t addr, const Node& node)
   return pos;
 }
 
+void
+Avalanche::print_buf(const string& msg, const ContinueBuf& buf)
+{
+  cout << msg;
+  cout << "begin: " << hex << buf.get_begin()
+       << dec << " size: " << buf.get_byte_sz()
+       << " num of src: " << buf.get_node_idx().size() << endl;
+}

@@ -292,6 +292,7 @@ Liveness::create_continuous_buf(AliveFunction& alive_func_res,
     }
   }
 
+  // saves last if any
   if(accum_byte_sz > 0) {
     // saves the last cont buf
     alive_func_res.add_cont_buf(cont_buf);

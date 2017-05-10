@@ -8,10 +8,14 @@
 
 namespace xt_file {
   const std::string ext       = ".txt";
+//  const std::string log_path  =
+//      "/home/xtaint/Workplace/XT-Offline_Analysis/test_file/";
+//  const std::string res_path  =
+//      "/home/xtaint/Workplace/XT-Offline_Analysis/test_result/";
   const std::string log_path  =
-      "/home/xtaint/Workplace/XT-Offline_Analysis/test_file/";
+      "/home/xtaint/Workplace/XT_Test_File/";
   const std::string res_path  =
-      "/home/xtaint/Workplace/XT-Offline_Analysis/test_result/";
+      "/home/xtaint/Workplace/XT_Test_Result/";
 
   const std::string preprocess    = "-preprcss";
   const std::string add_mem_sz    = "-add_mem_sz";
@@ -26,6 +30,8 @@ class xt_file::File{
  public:
   File(std::string fn);
   void read(std::vector<std::string> &s_log);
+  void read_preprocess(std::vector<std::string> &s_log);
+
 
   void write_str_log(const std::string path,
                      const std::vector<std::string> &v_s_log);

@@ -26,6 +26,8 @@ public:
   const std::multimap<uint32_t,uint32_t>&
            get_byte_val_map() const { return byte_val_map_; }
 
+  bool     has_range(uint32_t r_begin, uint32_t r_len);
+
   void     print_range() const;
   void     print_byte_val_map() const;
 private:

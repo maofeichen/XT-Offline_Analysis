@@ -65,6 +65,8 @@ private:
 
   Node get_mem_node(uint32_t idx);
   uint8_t compute_byte_pos(const uint32_t addr, const Node& node);
+
+  void print_buf(const std::string& msg, const ContinueBuf& buf);
 };
 
 #endif /* XT_AVALANCHE_H_ */

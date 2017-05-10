@@ -1,4 +1,6 @@
+#include "xt_flag.h"
 #include "xt_file.h"
+#include "xt_util.h"
 
 #include <fstream>
 #include <iostream>
@@ -29,6 +31,46 @@ void xt_file::File::read(std::vector<std::string> &s_log) {
   //    cout << *it << endl;
   //  }
 }
+
+void
+xt_file::File::read_preprocess(std::vector<std::string> &s_log)
+{
+  string lp = xt_file::log_path + fn_ + xt_file::ext;
+  cout << "reading log file... : " << lp  << endl;
+
+  ifstream fp(lp.c_str() );
+
+  if(fp.is_open() ) {
+    string prev_line;
+    string curr_line;
+
+    int num_line = 1;
+
+    getline(fp, prev_line);
+    while (getline(fp, curr_line) ) {
+//      cout << "prev line: " << prev_line << endl;
+//      cout << "curr line: " << curr_line << endl;
+
+      string prev_flag = prev_line.substr(0,2);
+      string curr_flag = curr_line.substr(0,2);
+      if(util::equal_mark(curr_flag, flag::XT_INSN_ADDR)
+         && util::equal_mark(prev_flag, flag::XT_INSN_ADDR) ) {
+
+      } else {
+        s_log.push_back(curr_line);
+      }
+
+      prev_line = curr_line;
+      num_line++;
+    }
+
+    cout << "total lines scanned: " << num_line << endl;
+  } else {
+    cout << "error open file: " << lp << endl;
+  }
+  fp.close();
+}
+
 
 void xt_file::File::write_str_log(const string path,
                                   const vector<string> &v_s_log) {
